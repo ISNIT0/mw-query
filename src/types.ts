@@ -45,8 +45,12 @@ interface QueryPageImages {
 }
 
 interface QueryOpts {
+    _opts?: {
+        [key: string]: string;
+        generator?: GeneratorOpts;
+    };
     continue?: {
-        [key: string]: string,
+        [key: string]: string;
     };
     categories?: QueryCategories;
     revisions?: QueryRevisions;
@@ -107,11 +111,16 @@ interface MwApiResponse {
     batchcomplete: string;
     query: MwApiQueryResponse;
     continue?: {
-        [key: string]: string,
+        [key: string]: string;
     };
+    'query-continue'?: {
+        allpages: {
+            [key: string]: string;
+        }
+    }
     warnings?: {
         [key: string]: {
-            [key: string]: string,
+            [key: string]: string;
         },
     };
 }
@@ -119,3 +128,53 @@ interface MwApiResponse {
 interface QueryMwRet {
     [articleId: string]: Page & QueryRet;
 }
+
+type QueryTarget = { articleIds: string[] } | { namespaces: string[] };
+
+type GeneratorOpts =
+    'allcategories' |
+    'alldeletedrevisions' |
+    'allfileusages' |
+    'allimages' |
+    'alllinks' |
+    'allpages' |
+    'allredirects' |
+    'allrevisions' |
+    'alltransclusions' |
+    'backlinks' |
+    'categories' |
+    'categorymembers' |
+    'contenttranslation' |
+    'contenttranslationsuggestions' |
+    'deletedrevisions' |
+    'duplicatefiles' |
+    'embeddedin' |
+    'exturlusage' |
+    'fileusage' |
+    'geosearch' |
+    'gettingstartedgetpages' |
+    'images' |
+    'imageusage' |
+    'iwbacklinks' |
+    'langbacklinks' |
+    'links' |
+    'linkshere' |
+    'mostviewed' |
+    'pageswithprop' |
+    'prefixsearch' |
+    'projectpages' |
+    'protectedtitles' |
+    'querypage' |
+    'random' |
+    'readinglistentries' |
+    'recentchanges' |
+    'redirects' |
+    'revisions' |
+    'search' |
+    'templates' |
+    'transcludedin' |
+    'watchlist' |
+    'watchlistraw' |
+    'wblistentityusage' |
+    'oldreviewedpages';
+

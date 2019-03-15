@@ -10,27 +10,24 @@ const defaultMwConfig: MWApi = {
     requestSize: 50,
 };
 
-export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds: string[]): Promise<QueryMwRet> {
-    if (!articleIds.length) {
+export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds?: string[]): Promise<QueryMwRet> {
+    if (articleIds && !articleIds.length) {
         return {};
     }
 
     const mwConfig = Object.assign({}, defaultMwConfig, _mwConfig);
 
-    const articleIdsBatch = articleIds.slice(0, mwConfig.requestSize);
+    const articleIdsBatch = (articleIds || []).slice(0, mwConfig.requestSize);
 
     const queryStr = buildQueryString(opts, articleIdsBatch);
 
     const queryUrl = `${mwConfig.apiUrl.replace('?', '')}${queryStr}`;
 
     // "continue" is a reserved word, using "_continue"
-    let query: MwApiQueryResponse;
-    let _continue;
+    let resp: MwApiResponse;
 
     try {
-        const resp = await getJSON<MwApiResponse>(queryUrl, mwConfig.retryAttempts);
-        query = resp.query;
-        _continue = resp.continue;
+        resp = await getJSON<MwApiResponse>(queryUrl, mwConfig.retryAttempts);
         if (resp.warnings) {
             console.warn(`The response contained warnings:`, resp.warnings);
         }
@@ -47,14 +44,14 @@ export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds: str
         }
     }
 
-    let processedResponse = normalizeResponse(query);
+    let processedResponse = normalizeResponse(resp.query);
 
-    if (_continue) {
+    if (resp.continue) {
         const nextResp = await queryMw(
             _mwConfig,
             {
                 ...opts,
-                continue: _continue,
+                continue: resp.continue,
             },
             articleIds,
         );
@@ -62,11 +59,28 @@ export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds: str
         processedResponse = deepmerge(processedResponse, nextResp);
     }
 
-    const nextResp = queryMw(
-        mwConfig,
-        opts,
-        articleIds.slice(mwConfig.requestSize),
-    );
+    if (resp['query-continue']) {
+        const nextResp = await queryMw(
+            _mwConfig,
+            {
+                ...opts,
+                _opts: Object.assign({}, opts._opts || {}, resp['query-continue'].allpages),
+            },
+            articleIds,
+        );
 
-    return deepmerge(processedResponse, nextResp);
+        processedResponse = deepmerge(processedResponse, nextResp);
+    }
+
+    if (articleIds) {
+        const nextResp = queryMw(
+            mwConfig,
+            opts,
+            articleIds.slice(mwConfig.requestSize),
+        );
+
+        return deepmerge(processedResponse, nextResp);
+    } else {
+        return processedResponse;
+    }
 }

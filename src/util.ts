@@ -29,9 +29,9 @@ export function buildQueryString(opts: QueryOpts, articleIds: string[]) {
             acc[module] = optsStr;
             return acc;
         }, {});
-    const modulesStr = Object.keys(modules).filter((a) => a !== 'continue').join('|');
+    const modulesStr = Object.keys(modules).filter((a) => a !== 'continue' && a !== '_opts').join('|');
     const modulesOptsStr = Object.values(modules).filter((a) => a).join('&');
-    return `?action=query&format=json&prop=${encodeURIComponent(modulesStr)}${modulesOptsStr ? `&${modulesOptsStr}` : ''}&titles=${encodeURIComponent(articleIds.join('|'))}`;
+    return `?action=query&format=json&prop=${encodeURIComponent(modulesStr)}${modulesOptsStr ? `&${modulesOptsStr}` : ''}${articleIds.length ? `&titles=${encodeURIComponent(articleIds.join('|'))}` : ''}`;
 }
 
 export function getJSON<T>(url: string, retryAttempts: number) {
