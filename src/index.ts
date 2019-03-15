@@ -1,7 +1,7 @@
 // tslint:disable-next-line:no-reference
 ///<reference path="./types.ts" />
 
-import { buildQueryString, makeMwUrl, getJSON, normalizeResponse } from './util';
+import { buildQueryString, getJSON, normalizeResponse } from './util';
 import deepmerge from 'deepmerge';
 
 const defaultMwConfig: MWApi = {
@@ -19,10 +19,9 @@ export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds: str
 
     const articleIdsBatch = articleIds.slice(0, mwConfig.requestSize);
 
-    const mwUrl = makeMwUrl(mwConfig);
     const queryStr = buildQueryString(opts, articleIdsBatch);
 
-    const queryUrl = `${mwUrl}${queryStr}`;
+    const queryUrl = `${mwConfig.apiUrl.replace('?', '')}${queryStr}`;
 
     // "continue" is a reserved word, using "_continue"
     let query: MwApiQueryResponse;

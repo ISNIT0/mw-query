@@ -2,7 +2,7 @@ import { queryMw } from 'src/index';
 
 queryMw(
     {
-        host: 'en.wikipedia.org',
+        apiUrl: 'https://en.wikipedia.org/w/api.php',
     }, {
         coordinates: {
             coprop: {

@@ -34,10 +34,6 @@ export function buildQueryString(opts: QueryOpts, articleIds: string[]) {
     return `?action=query&format=json&prop=${encodeURIComponent(modulesStr)}${modulesOptsStr ? `&${modulesOptsStr}` : ''}&titles=${encodeURIComponent(articleIds.join('|'))}`;
 }
 
-export function makeMwUrl(mwConfig: MWApi) {
-    return `${mwConfig.protocol}://${mwConfig.host}${mwConfig.apiPath}`;
-}
-
 export function getJSON<T>(url: string, retryAttempts: number) {
     console.info(`Getting JSON from [${url}]`);
     return new Promise<T>((resolve, reject) => {
