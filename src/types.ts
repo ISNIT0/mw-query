@@ -20,7 +20,7 @@ interface QueryCategories {
 }
 
 interface QueryRevisions {
-    rvlimit: number | 'max';
+    rvlimit?: number | 'max';
 }
 
 interface QueryCoordinates {
