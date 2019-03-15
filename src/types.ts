@@ -1,9 +1,7 @@
 declare module 'backoff';
 
 interface MWApi {
-    host: string;
-    apiPath?: string;
-    protocol?: 'http' | 'https';
+    apiUrl: string;
     retryAttempts?: number;
     requestSize?: number;
 }

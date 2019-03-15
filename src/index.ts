@@ -5,9 +5,7 @@ import { buildQueryString, makeMwUrl, getJSON, normalizeResponse } from './util'
 import deepmerge from 'deepmerge';
 
 const defaultMwConfig: MWApi = {
-    host: 'en.wikipedia.org',
-    protocol: 'https',
-    apiPath: '/w/api.php',
+    apiUrl: 'https://en.wikipedia.org/w/api.php',
     retryAttempts: 5,
     requestSize: 50,
 };
