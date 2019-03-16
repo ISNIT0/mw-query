@@ -116,8 +116,8 @@ interface MwApiResponse {
     'query-continue'?: {
         allpages: {
             [key: string]: string;
-        }
-    }
+        },
+    };
     warnings?: {
         [key: string]: {
             [key: string]: string;
@@ -177,4 +177,3 @@ type GeneratorOpts =
     'watchlistraw' |
     'wblistentityusage' |
     'oldreviewedpages';
-
