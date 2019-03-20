@@ -60,14 +60,14 @@ export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds?: st
     }
 
     if (resp['query-continue']) {
-        let cont: any = {
+        const cont: any = {
             picontinue: undefined,
         };
 
         if (resp['query-continue'].pageimages) {
-            cont.picontinue = resp['query-continue'].pageimages.picontinue
+            cont.picontinue = resp['query-continue'].pageimages.picontinue;
         } else {
-            cont.gapcontinue = resp['query-continue'].allpages.gapcontinue
+            cont.gapcontinue = resp['query-continue'].allpages.gapcontinue;
         }
 
         const _optsObj = Object.entries(
