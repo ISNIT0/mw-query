@@ -117,6 +117,9 @@ interface MwApiResponse {
         allpages: {
             [key: string]: string;
         },
+        pageimages: {
+            picontinue: string;
+        },
     };
     warnings?: {
         [key: string]: {

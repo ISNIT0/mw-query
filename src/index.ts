@@ -60,11 +60,35 @@ export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds?: st
     }
 
     if (resp['query-continue']) {
+        let cont: any = {
+            picontinue: undefined,
+        };
+
+        if (resp['query-continue'].pageimages) {
+            cont.picontinue = resp['query-continue'].pageimages.picontinue
+        } else {
+            cont.gapcontinue = resp['query-continue'].allpages.gapcontinue
+        }
+
+        const _optsObj = Object.entries(
+            Object.assign(
+                {},
+                opts._opts || {},
+                cont,
+            ),
+        )
+            .reduce((acc: any, [key, value]) => {
+                if (value) {
+                    acc[key] = value;
+                }
+                return acc;
+            }, {});
+
         const nextResp = await queryMw(
             _mwConfig,
             {
                 ...opts,
-                _opts: Object.assign({}, opts._opts || {}, resp['query-continue'].allpages),
+                _opts: _optsObj,
             },
             articleIds,
         );
