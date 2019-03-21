@@ -44,7 +44,7 @@ export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds?: st
         }
     }
 
-    let processedResponse = normalizeResponse(resp.query);
+    let processedResponse = normalizeResponse(resp.query || { normalized: [], pages: {} });
 
     if (resp.continue) {
         const nextResp = await queryMw(
