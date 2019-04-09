@@ -10,7 +10,7 @@ const defaultMwConfig: MWApi = {
     requestSize: 50,
 };
 
-export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds?: string[]): Promise<QueryMwRet> {
+export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds?: string[], handleBatch?: (ret: QueryMwRet) => Promise<void>): Promise<QueryMwRet> {
     if (articleIds && !articleIds.length) {
         return {};
     }
@@ -23,7 +23,6 @@ export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds?: st
 
     const queryUrl = `${mwConfig.apiUrl.replace('?', '')}${queryStr}`;
 
-    // "continue" is a reserved word, using "_continue"
     let resp: MwApiResponse;
 
     try {
@@ -40,26 +39,19 @@ export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds?: st
                 mwConfig,
                 opts,
                 articleIds,
+                handleBatch,
             );
         }
     }
 
     let processedResponse = normalizeResponse(resp.query || { normalized: [], pages: {} });
 
-    if (resp.continue) {
-        const nextResp = await queryMw(
-            _mwConfig,
-            {
-                ...opts,
-                continue: resp.continue,
-            },
-            articleIds,
-        );
-
-        processedResponse = deepmerge(processedResponse, nextResp);
+    if (handleBatch) {
+        await handleBatch(processedResponse);
     }
 
     if (resp['query-continue']) {
+
         const cont: any = {
             picontinue: undefined,
         };
@@ -91,19 +83,56 @@ export async function queryMw(_mwConfig: MWApi, opts: QueryOpts, articleIds?: st
                 _opts: _optsObj,
             },
             articleIds,
+            handleBatch,
         );
 
-        processedResponse = deepmerge(processedResponse, nextResp);
+        if (handleBatch) {
+            return nextResp;
+        } else {
+            processedResponse = deepmerge(processedResponse, nextResp);
+        }
+    } else if (resp.continue) {
+
+        const cont = opts.continue || {};
+        const propContinues = Object.keys(resp.continue).filter((a) => a !== 'continue');
+
+        if (propContinues.length) {
+            delete resp.continue.continue;
+            Object.assign(cont, resp.continue || {});
+        } else {
+            opts.continue = resp.continue;
+        }
+
+        const nextResp = await queryMw(
+            _mwConfig,
+            {
+                ...opts,
+                continue: cont,
+            },
+            articleIds,
+            handleBatch,
+        );
+
+        if (handleBatch) {
+            return nextResp;
+        } else {
+            processedResponse = deepmerge(processedResponse, nextResp);
+        }
     }
 
     if (articleIds) {
-        const nextResp = queryMw(
+        const nextResp = await queryMw(
             mwConfig,
             opts,
             articleIds.slice(mwConfig.requestSize),
+            handleBatch,
         );
 
-        return deepmerge(processedResponse, nextResp);
+        if (handleBatch) {
+            return nextResp;
+        } else {
+            return deepmerge(processedResponse, nextResp);
+        }
     } else {
         return processedResponse;
     }
